@@ -20,7 +20,7 @@ namespace winformModbus
         //04 06 00 0B 00 03 B8 5C
         private GlobalVariable() { }//01 06 00 C8 00 06 88 36//02 06 00 0B 00 03 B8 3A//04 06 00 0B 00 01 39 9D//05 06 00 0B 00 01 38 4C
         public int[] AddressBaud=new int[10];//01 06 00 C8 00 03 48 35 9600//02 06 00 0B 00 01 39 FB 9600//04 06 00 0B 00 07 B9 9F//05 06 00 0B 00 07 B8 4E
-        public int[] BaudRateList = new int[] { 9600, 19200,38400,57600, 115200 };//01 06 00 0B 00 01 39 C8  9600//01 06 00 0B 00 07 B9 CA 115200//
+        public int[] BaudRateList = new int[] { 9600, 19200,38400,57600, 115200 };//test01 06 00 0B 00 01 39 C8  9600//01 06 00 0B 00 07 B9 CA 115200//
         public string[] SendDataList = new string[] { "01 04 00 00 00 02 71 CB", "04 04 00 00 00 02 71 9E", "05 04 00 00 00 02 70 4F", "02 04 00 00 00 02 71 F8" };
         public byte[] ToByte(string s)
         {
