@@ -32,7 +32,7 @@ namespace winformModbus
     //}
     public class MyPort2
     {
-        public delegate void EventHandler(string port, string msg, int br, int db, int sb, int pr,int poll,int response);
+        public delegate void EventHandler(string port, string msg, int br, int db, int sb, int pr,int poll,int response, bool checkCRC);
         public event EventHandler _OnMessageHandler;
         //private MyPortType2 myPortType;
         private string _portName;
@@ -128,10 +128,8 @@ namespace winformModbus
             {
                 strBuider.Append(((int)buffer[index]).ToString("X2") + " ");
             }
-            Console.WriteLine($"DataReveiced:{port.PortName},{baudRate},{dataBit},{stopBit},{parity},{strBuider.ToString()},{_poll},{_response}");
-            if(strBuider.ToString().Contains("04"))_response++;
-            //myPortType = new MyPortType2(portName, baudRate, dataBit, stopBit, parity,poll,response);
-            _OnMessageHandler?.Invoke(portName, strBuider.ToString(), baudRate, dataBit, stopBit, parity,_poll,_response);
+            if(g1.CheckCRC16LH(buffer)) _response++;
+            _OnMessageHandler?.Invoke(portName, strBuider.ToString(), baudRate, dataBit, stopBit, parity,_poll,_response, g1.CheckCRC16LH(buffer));
             _isOver = true;
         }
 
@@ -145,119 +143,50 @@ namespace winformModbus
         {
 
             byte[] tmpByte = new byte[16];
-            int _timeOut = 0;
             try
             {
                 GC.Collect();
                 DataAccess db = new DataAccess();
                 port.BaudRate = 19200;//g1.BaudRateList[2];
-                port.DataBits = (1 == 0) ? 7 : 8;
-                port.StopBits = (0 == 0) ? StopBits.One : StopBits.Two;
-                if (0 == 0) port.Parity = Parity.None;
-                else if (0 == 1) port.Parity = Parity.Odd;
-                else if (0 == 2) port.Parity = Parity.Even;
+                port.DataBits = 8;
+                port.StopBits = StopBits.One;
+                port.Parity = Parity.None;
                 if (!port.IsOpen)
                 {
                     port.Open();
                     port.DiscardInBuffer();
                     port.DiscardOutBuffer();
                 }
-                if(port.PortName == "COM3")
+                foreach(ComParam Param in g1.Params)
                 {
-                    //while (true)
-                    //{
-                    //    port.BaudRate = g1.AddressBaud[0];
-                    //    tmpByte = g1.ToByte(g1.SendDataList[0]);
-                    //    port.Write(tmpByte, 0, tmpByte.Length);
-                    //    _poll++;
-                    //    _isOver = false;
-                    //    while (!_isOver)
-                    //    {
-                    //        _timeOut++;
-                    //        Thread.Sleep(1);
-                    //        if (_timeOut > 10) _isOver = true;
-                    //    }
-                    //    Thread.Sleep(50);
-                    //    if (_poll >= 1000)
-                    //    {
-                    //        db.InsertModbusDB(portNum, baudRate, port.DataBits, stopBit, parity, 1, 4, _poll, _response);
-                    //        _poll = 0;
-                    //        _response = 0;
-                    //        break;
-                    //    }
-                    //}
-                    while (true)
+                    if(Param.ComName == port.PortName&&Param.FunctionCode==4&&Param.Stopbit==1&&Param.Databit==8&&Param.Parity==0)
                     {
-                        port.BaudRate = g1.AddressBaud[1];
-                        tmpByte = g1.ToByte(g1.SendDataList[3]);
-                        port.Write(tmpByte, 0, tmpByte.Length);
-                        _poll++;
-                        _isOver = false;
-                        while (!_isOver)
+                        while (true)
                         {
-                            _timeOut++;
-                            Thread.Sleep(1);
-                            if (_timeOut > 10) _isOver = true;
-                        }
-                        Thread.Sleep(50);
-                        if (_poll >= 1000)
-                        {
-                            db.InsertModbusDB(portNum, baudRate, port.DataBits, stopBit, parity,
-                                2, 4, _poll, _response);
-                            _poll = 0;
-                            _response = 0;
-                            break;
+                            int _timeOut = 0;
+                            port.BaudRate = Param.Baud;
+                            tmpByte = g1.ToByte($"0{Param.Address} 0{Param.FunctionCode} 00 00 00 01");
+                            tmpByte = g1.CRC16LH(tmpByte);
+                            port.Write(tmpByte, 0, tmpByte.Length);
+                            _poll++;
+                            _isOver = false;
+                            //while (!_isOver)
+                            //{
+                            //    _timeOut++;
+                            //    Thread.Sleep(1);
+                            //    if (_timeOut > 30) _isOver = true;
+                            //}
+                            Thread.Sleep(50);
+                            if (_poll >= 1000)
+                            {
+                                db.InsertModbusDB(portNum, baudRate, port.DataBits, stopBit, parity, Param.Address, Param.FunctionCode, _poll, _response);
+                                _poll = 0;
+                                _response = 0;
+                                break;
+                            }
                         }
                     }
-                }
-                if(port.PortName == "COM2")
-                {
-                    while (true)
-                    {
-                        port.BaudRate = g1.AddressBaud[3];
-                        tmpByte = g1.ToByte(g1.SendDataList[1]);
-                        port.Write(tmpByte, 0, tmpByte.Length);
-                        _poll++;
-                        _isOver = false;
-                        while (!_isOver)
-                        {
-                            _timeOut++;
-                            Thread.Sleep(1);
-                            if (_timeOut > 10) _isOver = true;
-                        }
-                        Thread.Sleep(50);
-                        if (_poll >= 1000)
-                        {
-                            db.InsertModbusDB(portNum, baudRate, port.DataBits, stopBit, parity,
-                                4, 4, _poll, _response);
-                            _poll = 0;
-                            _response = 0;
-                            break;
-                        }
-                    }
-                    while (true)
-                    {
-                        port.BaudRate = g1.AddressBaud[4];
-                        tmpByte = g1.ToByte(g1.SendDataList[2]);
-                        port.Write(tmpByte, 0, tmpByte.Length);
-                        _poll++;
-                        _isOver = false;
-                        while (!_isOver)
-                        {
-                            _timeOut++;
-                            Thread.Sleep(1);
-                            if (_timeOut > 10) _isOver = true;
-                        }
-                        Thread.Sleep(50);
-                        if (_poll >= 1000)
-                        {
-                            db.InsertModbusDB(portNum, baudRate, port.DataBits, stopBit, parity,
-                                5, 4, _poll, _response);
-                            _poll = 0;
-                            _response = 0;
-                            break;
-                        }
-                    }
+
                 }
             }
             catch (Exception ex)

@@ -30,20 +30,18 @@ namespace winformModbus.Forms
         {
             InitializeComponent();
         }
-        private void showMsg(string port, string msg, int br, int db, int sb, int pr,int poll,int resp)
+        private void showMsg(string port, string msg, int br, int db, int sb, int pr,int poll,int resp, bool checkCRC)
         {
             this.Invoke(new MethodInvoker(delegate ()
             {
-                richTextBox.AppendText($"{port},BaudRate:{br},DataBit:{db},StopBit:{sb},Parity:{pr},Message:{msg},poll:{poll}response:{resp},accuracy:{(float)resp / (float)poll}\n");
-                //richTextBox.AppendText($"{port},BaudRate:{br},DataBit:{db},StopBit:{sb},Parity:{pr},Message:{msg}\n");
+                richTextBox.AppendText($"{port},BaudRate:{br},DataBit:{db},StopBit:{sb},Parity:{pr},Message:{msg},poll:{poll}response:{resp}, checkCRC:{checkCRC}\n");
             }));
         }
-        private void showMsg(string port, string msg, int br, int db, int sb, int pr)
+        private void showMsg(string port, string msg, int br, int db, int sb, int pr,bool checkCRC)
         {
             this.Invoke(new MethodInvoker(delegate ()
             {
-                richTextBox.AppendText($"{port},BaudRate:{br},DataBit:{db},StopBit:{sb},Parity:{pr},Message:{msg}\n");
-                //richTextBox.AppendText($"{port},BaudRate:{br},DataBit:{db},StopBit:{sb},Parity:{pr},Message:{msg}\n");
+                richTextBox.AppendText($"{port},BaudRate:{br},DataBit:{db},StopBit:{sb},Parity:{pr},Message:{msg}, checkCRC:{checkCRC}\n");
             }));
         }
 
@@ -51,6 +49,7 @@ namespace winformModbus.Forms
         {
 
             ports.Clear();
+            g1.Params.Clear();
             foreach (string port in SerialPort.GetPortNames())
             {
                 ports.Add(new MyPort(port));

@@ -82,6 +82,7 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComParam.cs" />
     <Compile Include="DataAccess.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>

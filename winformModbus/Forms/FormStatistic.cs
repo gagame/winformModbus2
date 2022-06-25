@@ -25,19 +25,6 @@ namespace winformModbus.Forms
         public FormStatistic()
         {
             InitializeComponent();
-            cartesianChart1.Series = new SeriesCollection
-            {
-                new LineSeries
-                {
-                    Values = new ChartValues<double> {}
-                },
-            };
-
-            cartesianChart1.AxisX.Add(new Axis
-            {
-                Title = "Baud",
-                Labels = new[] { "9600", "19200", "19200"}
-            });
 
             cartesianChart1.LegendLocation = LegendLocation.Right;
 
@@ -52,21 +39,7 @@ namespace winformModbus.Forms
             try
             {
                 DataAccess db = new DataAccess();
-                statisticList = db.GetModbusDB(Int32.Parse(addressTextBox.Text));
-                UpdateBinding();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-        private void loadBtn_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                DataAccess db = new DataAccess();
-                statisticList = db.GetModbusDB(Int32.Parse(addressTextBox.Text));
-                UpdateBinding();
+                statisticList = db.GetModbusDB(comTextBox.Text, baudTextBox.Text, databitsTextBox.Text, stopbitsTextBox.Text, parityTextBox.Text, addressTextBox.Text,functionTextBox.Text, pollTextBox.Text, responseTextBox.Text);
 
                 List<string> baudList = new List<string>();
                 List<double> respList = new List<double>();
@@ -75,8 +48,29 @@ namespace winformModbus.Forms
                     respList.Add(_sta.ResponseCount);
                     baudList.Add(_sta.Baud.ToString());
                 }
-                foreach(var resp in respList)cartesianChart1.Series[0].Values.Add(resp);
+                UpdateBinding();
 
+                cartesianChart1.Series = new SeriesCollection
+                {
+                    new LineSeries
+                    {
+                        Values = new ChartValues<double> {}
+                    },
+                };
+                foreach (var resp in respList) cartesianChart1.Series[0].Values.Add(resp);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        private void clearBtn_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                this.searchListbox.DataSource = null;
+                this.searchListbox.Items.Clear();
+                this.cartesianChart1.Series.Clear();
 
             }
             catch (Exception ex)

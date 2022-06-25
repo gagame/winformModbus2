@@ -22,6 +22,7 @@ namespace winformModbus
         public int[] AddressBaud=new int[10];//01 06 00 C8 00 03 48 35 9600//02 06 00 0B 00 01 39 FB 9600//04 06 00 0B 00 07 B9 9F//05 06 00 0B 00 07 B8 4E
         public int[] BaudRateList = new int[] { 9600, 19200,38400,57600, 115200 };//test01 06 00 0B 00 01 39 C8  9600//01 06 00 0B 00 07 B9 CA 115200//
         public string[] SendDataList = new string[] { "01 04 00 00 00 02 71 CB", "04 04 00 00 00 02 71 9E", "05 04 00 00 00 02 70 4F", "02 04 00 00 00 02 71 F8" };
+        public List<ComParam> Params = new List<ComParam>();
         public byte[] ToByte(string s)
         {
             return s.Split(' ').AsParallel().Select(x => Convert.ToByte(x, 16)).ToArray();
@@ -53,6 +54,39 @@ namespace winformModbus
             System.Buffer.BlockCopy(pDataBytes, 0, rv, 0, pDataBytes.Length);
             System.Buffer.BlockCopy(result, 0, rv, pDataBytes.Length, result.Length);
             return rv;
+        }
+        public bool CheckCRC16LH(byte[] pDataBytes)
+        {
+            ushort crc = 0xffff;
+            ushort polynom = 0xA001;
+
+            for (int i = 0; i < pDataBytes.Length-2; i++)
+            {
+                crc ^= pDataBytes[i];
+                for (int j = 0; j < 8; j++)
+                {
+                    if ((crc & 0x01) == 0x01)
+                    {
+                        crc >>= 1;
+                        crc ^= polynom;
+                    }
+                    else
+                    {
+                        crc >>= 1;
+                    }
+                }
+            }
+
+            byte[] result = BitConverter.GetBytes(crc);
+            try
+            {
+                if (result[0] == pDataBytes[pDataBytes.Length - 2] && result[1] == pDataBytes[pDataBytes.Length - 1]&& pDataBytes[0]!=0xFF) return true;
+                else return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>

@@ -9,28 +9,10 @@ using System.Threading.Tasks;
 
 namespace winformModbus
 {
-    public class MyPortType
-    {
-        public string portName;
-        public int baudRate;
-        public int dataBit;
-        public int stopBit;
-        public int parity;
-
-        public MyPortType(string portName, int baudRate, int dataBit, int stopBit, int parity)
-        {
-            this.portName = portName;
-            this.baudRate = baudRate;
-            this.dataBit = dataBit;
-            this.stopBit = stopBit;
-            this.parity = parity;
-        }
-    }
     public class MyPort
     {
-        public delegate void EventHandler(string port, string msg, int br, int db, int sb, int pr);
+        public delegate void EventHandler(string port, string msg, int br, int db, int sb, int pr, bool checkCRC);
         public event EventHandler _OnMessageHandler;
-        private MyPortType myPortType;
         private string _portName;
         private int _baudRate;
         private int _dataBit;
@@ -116,17 +98,12 @@ namespace winformModbus
             {
                 strBuider.Append(((int)buffer[index]).ToString("X2") + " ");
             }
-            Console.WriteLine($"DataReveiced:{port.PortName},{baudRate},{dataBit},{stopBit},{parity},{strBuider.ToString()}");
             string[] strArray = strBuider.ToString().Split(' ');
-            for(int i = 0; i < 10; i++)
+            if(g1.CheckCRC16LH(buffer)&& buffer[0] < 0xF8)
             {
-                if (strArray[0] == $"0{i+1}")
-                {
-                    g1.AddressBaud[i] = port.BaudRate;
-                }
-            } 
-            myPortType = new MyPortType(portName, baudRate, dataBit, stopBit, parity);
-            _OnMessageHandler?.Invoke(portName, strBuider.ToString(), baudRate, dataBit, stopBit, parity);
+                g1.Params.Add(new ComParam(portName, dataBit, stopBit, parity,baudRate, Int32.Parse(strArray[0]), Int32.Parse(strArray[1])));
+            }
+            _OnMessageHandler?.Invoke(portName, strBuider.ToString(), baudRate, dataBit, stopBit, parity, g1.CheckCRC16LH(buffer));
             _isOver = true;
         }
 
@@ -147,7 +124,6 @@ namespace winformModbus
                     {
                         for (int scanParity = 0; scanParity < 3; scanParity++)
                         {
-                            int _timeOut = 0;
                             try
                             {
                                 GC.Collect();
@@ -163,58 +139,30 @@ namespace winformModbus
                                     port.DiscardInBuffer();
                                     port.DiscardOutBuffer();
                                 }
-                                if (port.IsOpen) Console.WriteLine($"Open:{portName},{baudRate},{dataBit},{stopBit},{parity} OK");
-                                tmpByte = g1.ToByte(g1.SendDataList[0]);
-                                port.Write(tmpByte, 0, tmpByte.Length);
-                                _isOver = false;
-                                while (!_isOver)
+                                for (int scanAddress = 1; scanAddress <= 5; scanAddress++)
                                 {
-                                    _timeOut++;
-                                    Thread.Sleep(1);
-                                    if (_timeOut > 10) _isOver = true;
+                                    for (int scanFunctionCode = 1; scanFunctionCode <= 4; scanFunctionCode++)
+                                    {
+                                        int _timeOut = 0;
+                                        tmpByte = g1.ToByte($"0{scanAddress} 0{scanFunctionCode} 00 00 00 01");
+                                        tmpByte = g1.CRC16LH(tmpByte);
+                                        port.Write(tmpByte, 0, tmpByte.Length);
+                                        _isOver = false;
+                                        //while (!_isOver)
+                                        //{
+                                        //    _timeOut++;
+                                        //    Thread.Sleep(1);
+                                        //    if (_timeOut > 20) _isOver = true;
+                                        //}
+                                        Thread.Sleep(50);
+                                    }
                                 }
-                                Thread.Sleep(50);
-                                tmpByte = g1.ToByte(g1.SendDataList[1]);
-                                port.Write(tmpByte, 0, tmpByte.Length);
-                                _isOver = false;
-                                while (!_isOver)
-                                {
-                                    _timeOut++;
-                                    Thread.Sleep(1);
-                                    if (_timeOut > 10) _isOver = true;
-                                }
-                                Thread.Sleep(50);
-                                tmpByte = g1.ToByte(g1.SendDataList[2]);
-                                port.Write(tmpByte, 0, tmpByte.Length);
-                                _isOver = false;
-                                while (!_isOver)
-                                {
-                                    _timeOut++;
-                                    Thread.Sleep(1);
-                                    if (_timeOut > 10) _isOver = true;
-                                }
-                                Thread.Sleep(50);
-                                tmpByte = g1.ToByte(g1.SendDataList[3]);
-                                port.Write(tmpByte, 0, tmpByte.Length);
-                                _isOver = false;
-                                while (!_isOver)
-                                {
-                                    _timeOut++;
-                                    Thread.Sleep(1);
-                                    if (_timeOut > 10) _isOver = true;
-                                }
-                                Thread.Sleep(50);
                             }
-                            catch (Exception ex)
+                            catch 
                             {
                                 _isOver = true;
                                 Console.WriteLine($"Open:{portName} failed");
                                 return;
-                            }
-                            while (!_isOver)
-                            {
-                                _timeOut++;
-                                if (_timeOut > 10) _isOver = true;
                             }
                         }
                     }

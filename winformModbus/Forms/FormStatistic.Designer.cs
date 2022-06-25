@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
+            this.cartesianChart1 = new LiveCharts.WinForms.CartesianChart();
             this.panel2 = new System.Windows.Forms.Panel();
             this.responseTextBox = new System.Windows.Forms.TextBox();
             this.pollTextBox = new System.Windows.Forms.TextBox();
@@ -51,8 +52,7 @@
             this.searchListbox = new System.Windows.Forms.ListBox();
             this.comTextBox = new System.Windows.Forms.TextBox();
             this.searchBtn = new System.Windows.Forms.Button();
-            this.loadBtn = new System.Windows.Forms.Button();
-            this.cartesianChart1 = new LiveCharts.WinForms.CartesianChart();
+            this.clearBtn = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -66,6 +66,14 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1036, 492);
             this.panel1.TabIndex = 0;
+            // 
+            // cartesianChart1
+            // 
+            this.cartesianChart1.Location = new System.Drawing.Point(23, 12);
+            this.cartesianChart1.Name = "cartesianChart1";
+            this.cartesianChart1.Size = new System.Drawing.Size(976, 263);
+            this.cartesianChart1.TabIndex = 0;
+            this.cartesianChart1.Text = "cartesianChart1";
             // 
             // panel2
             // 
@@ -91,7 +99,7 @@
             this.panel2.Controls.Add(this.searchListbox);
             this.panel2.Controls.Add(this.comTextBox);
             this.panel2.Controls.Add(this.searchBtn);
-            this.panel2.Controls.Add(this.loadBtn);
+            this.panel2.Controls.Add(this.clearBtn);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(0, 292);
             this.panel2.Name = "panel2";
@@ -245,7 +253,7 @@
             // insertBtn
             // 
             this.insertBtn.Font = new System.Drawing.Font("Century Gothic", 10F);
-            this.insertBtn.Location = new System.Drawing.Point(23, 92);
+            this.insertBtn.Location = new System.Drawing.Point(23, 53);
             this.insertBtn.Name = "insertBtn";
             this.insertBtn.Size = new System.Drawing.Size(87, 33);
             this.insertBtn.TabIndex = 6;
@@ -292,24 +300,16 @@
             this.searchBtn.UseVisualStyleBackColor = true;
             this.searchBtn.Click += new System.EventHandler(this.searchBtn_Click);
             // 
-            // loadBtn
+            // clearBtn
             // 
-            this.loadBtn.Font = new System.Drawing.Font("Century Gothic", 10F);
-            this.loadBtn.Location = new System.Drawing.Point(23, 53);
-            this.loadBtn.Name = "loadBtn";
-            this.loadBtn.Size = new System.Drawing.Size(87, 33);
-            this.loadBtn.TabIndex = 1;
-            this.loadBtn.Text = "Load";
-            this.loadBtn.UseVisualStyleBackColor = true;
-            this.loadBtn.Click += new System.EventHandler(this.loadBtn_Click);
-            // 
-            // cartesianChart1
-            // 
-            this.cartesianChart1.Location = new System.Drawing.Point(23, 12);
-            this.cartesianChart1.Name = "cartesianChart1";
-            this.cartesianChart1.Size = new System.Drawing.Size(976, 263);
-            this.cartesianChart1.TabIndex = 0;
-            this.cartesianChart1.Text = "cartesianChart1";
+            this.clearBtn.Font = new System.Drawing.Font("Century Gothic", 10F);
+            this.clearBtn.Location = new System.Drawing.Point(23, 92);
+            this.clearBtn.Name = "clearBtn";
+            this.clearBtn.Size = new System.Drawing.Size(87, 33);
+            this.clearBtn.TabIndex = 1;
+            this.clearBtn.Text = "Clear";
+            this.clearBtn.UseVisualStyleBackColor = true;
+            this.clearBtn.Click += new System.EventHandler(this.clearBtn_Click);
             // 
             // FormStatistic
             // 
@@ -340,7 +340,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn pollCountDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn responseCountDataGridViewTextBoxColumn;
         private System.Windows.Forms.Button searchBtn;
-        private System.Windows.Forms.Button loadBtn;
+        private System.Windows.Forms.Button clearBtn;
         private System.Windows.Forms.TextBox comTextBox;
         private System.Windows.Forms.ListBox searchListbox;
         private System.Windows.Forms.Label label1;
